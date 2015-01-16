@@ -1,0 +1,173 @@
+<html>
+	<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>WS Monitor</title>
+	<link href='stylecss.css' rel='stylesheet' type "text/css"/>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="libs/highcharts.js"></script>
+	<div><img style="width:189px; height:58px; title=" columbus_logo" alt="Columbus Logo" src="imagenes/columbus_logo.png"></div>
+		<body>
+		<div align="center"><table>
+			<h1 id = "titulo"></h1>
+			<br>
+			
+			<h4 id = "msg"><h4>
+			<tr><div id="chart1"align="center"style="width:1200px;color:red"></div></tr>
+			<br>
+			<tr><div id="chart2"align="center"style="width:1200px;color:red"></div></tr>
+			<table></div>
+			<script type="text/javascript">
+			
+			var x = 0;
+			var limit = 10;
+			var names = [];
+			var tg = [];
+			tg[0]=101;
+			names[0]='Flow Jamaica';
+			function update2(){
+				$.ajax({
+						url: "WStrunks.php",
+						data: {},
+						dataType: "json",
+						success: function(data){
+							
+							limit = data[0]['NAME'].length;
+							
+							for (i = 0; i < limit; i++){
+								names[i] = data[0]['NAME'][i];
+								tg[i] = data[1]['TG'][i];
+								
+							}
+						}
+					});
+			}
+			
+			function update(){
+				//alert(limit);
+				if(x==limit){
+					x=0;
+				}
+				trunk_pais(tg[x],0);
+				trunk_trunk(tg[x],0);
+				$('#titulo').text(names[x]);
+				x++;
+			}
+			
+			function trunk_pais(trunk,element){
+					
+					var options = {
+						chart: {
+							renderTo: 'chart1',backgroundColor: null,
+						},
+						credits: {
+							enabled: false
+						},
+						title: {
+							text: 'ASR from '+ names[x] +' to regions',
+							x: -20
+						},
+						xAxis: {
+							categories: [{}]
+						},
+						yAxis: {
+							title: {
+								text: 'ASR'
+							}
+						},
+						tooltip: {
+							formatter: function() {
+									return '<b>'+ this.series.name +'</b><br/>'+
+									this.x +': '+ this.y;
+							}
+						},
+						series: [{},{}]
+					};
+					
+					$.ajax({
+						url: "trunk_paises.php",
+						data: {
+							trunk: trunk, element:element
+						},
+						type:'post',
+						dataType: "json",
+						success: function(data){
+							//alert(data.data.length);
+							
+							if(data.data.length != 0){
+								$('#chart1').show();
+								$('#msg').hide();
+								options.xAxis.categories = data.categories;
+								options.series=data.data;
+								var chart = new Highcharts.Chart(options);							
+							}else{
+								$('#chart1').hide();
+							}
+						}
+					});
+					
+				}
+			function trunk_trunk(trunk,element){
+					
+					var options = {
+						chart: {
+							renderTo: 'chart2',backgroundColor: null,
+						},
+						credits: {
+							enabled: false
+						},
+						title: {
+							text: 'ASR from '+ names[x] +' to carriers',
+							x: -20
+						},
+						xAxis: {
+							categories: [{}]
+						},
+						yAxis: {
+							title: {
+								text: 'ASR'
+							}
+						},
+						tooltip: {
+							formatter: function() {
+									return '<b>'+ this.series.name +'</b><br/>'+
+									this.x +': '+ this.y;
+							}
+						},
+						series: [{},{}]
+					};
+					
+					$.ajax({
+						url: "trunk_trunks.php",
+						data: {
+							trunk: trunk, element:element
+						},
+						type:'post',
+						dataType: "json",
+						success: function(data){
+							if(data.data.length != 0){
+								//alert(data.data.length);
+								$('#chart2').show();
+								$('#msg').hide();
+								options.xAxis.categories = data.categories;
+								options.series=data.data;
+								var chart = new Highcharts.Chart(options);							
+								}
+							else{
+								$('#chart2').hide();
+								if($(chart1).is(":hidden")){
+									$('#msg').show();
+									$('#msg').text('This carrier is not being used.');
+								}
+							}
+						}
+					});
+				}
+				
+				update2();
+				update();
+				setInterval ( update, 45000 );
+				setInterval ( update2, 3600000 );
+			</script>
+		</body>
+	</head>
+</html>

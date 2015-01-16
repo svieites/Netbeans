@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Call Search</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=10" />
+        <link href='stylecss.css' rel='stylesheet'>
+        <link href="libs/CalendarControl.css" rel="stylesheet" type="text/css">
+	
+        <script src="libs/CalendarControl.js" language="javascript"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <br>
+        <br>
+        <h1>Call Search</h1>
+        <br>
+        <br>
+        <center><table>
+            <tr>
+            <td><label>Calling number(Ani):</label>&nbsp;&nbsp;</td>
+            <td><input style="width: 170px" id="ani" type="text">&nbsp;&nbsp;</td>
+            <td><label>Select begin date:</label>&nbsp;&nbsp;</td>
+            <td><input style="width: 170px" id="begin_date" name="begin_date" onfocus="showCalendarControl(this);" type="text">&nbsp;&nbsp;</td>
+            <td><button id="show" value="0" style="width: 80px" onclick="buscar(this.value)">Show</button></td>
+            </tr>    
+            <tr>
+                <td><br></td>
+            </tr>    
+            <tr>
+            <td><label>Called number:</label>&nbsp;&nbsp;</td>
+            <td><input style="width: 170px" id="called" type="text"></input>&nbsp;&nbsp;</td>
+            <td><label>Select end date:</label>&nbsp;&nbsp;</td>
+            <td><input style="width: 170px" id="end_date" name="end_date" onfocus="showCalendarControl(this);" type="text">&nbsp;&nbsp;</td>
+            <td><button id="csv" value="1" style="width: 80px" onclick="buscar(this.value)">CSV</button></td>
+            </tr>
+        </table></center>
+    
+    <br>
+    <br>
+    <center><div id="table_div" style="width:925px;"></div><center>
+            
+    <script type="text/javascript">
+     
+    google.load("visualization", "1", {packages:["table"]});
+     
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //January is 0!
+
+    var yyyy = today.getFullYear();
+    if(dd<10){
+    	dd='0'+dd;
+    }
+    if(mm<10){
+        mm='0'+mm;
+    }
+    //today's date to initialize date inputs
+    var today = mm+'-'+dd+'-'+yyyy;
+    
+    document.getElementById("begin_date").value = today;
+    document.getElementById("end_date").value = today;
+    
+	//this function gets the result from the php and then creates a google table to display the info or it exports a CSV file
+    function buscar(btn){
+        //get begin date and change the format
+        var begin_date = document.getElementById("begin_date").value;
+		var year1 = begin_date.substring(6,10);
+		var day1 = begin_date.substring(3,5);
+		var month1 = begin_date.substring(0,2);
+		begin_date = year1+'-'+month1+'-'+day1;
+		
+		//get end date and change the format
+		var end_date = document.getElementById("end_date").value;
+		var year2 = end_date.substring(6,10);
+		var day2 = end_date.substring(3,5);
+		var month2 = end_date.substring(0,2);
+		end_date = year2+'-'+month2+'-'+day2;
+        
+        var ani = document.getElementById("ani").value
+        var called = document.getElementById("called").value;
+        if(begin_date>end_date){
+            alert('End date must be equal or higher than begin date');
+		}else if(ani=='' && called==''){
+            alert('Ani or Called number is necessary');
+        }else{
+		//disable both buttons after clicking one
+            $('#show').prop('disabled', true);
+			$('#csv').prop('disabled', true);
+            $('#table_div').text('Please wait a few minutes...');
+			
+			//ajax is used with a post method to send the variables to create the query and gets the result as a JSON array
+			$.ajax({
+				//php that connects to the DB to get the result
+				url: "call_search.php",
+					//the data that the php needs for the query
+					data: {
+						ani:ani,called: called,begin_date:begin_date,end_date:end_date,btn:btn
+					},
+				type:'post',
+				dataType: "json",
+				//If the connection is successful, depending on the button clicked it will either create a google table chart or export the info as a CSV file
+				success: function(data){
+					//data is the result from the php 
+					var data1 = new google.visualization.DataTable(data);
+					//condition to create table
+					if(btn==0){
+						
+						var table = new google.visualization.Table(document.getElementById('table_div'));
+						//options to create the table, 'page' is the option to enable paging on the table
+						var options = {showRowNumber: true, 
+						  allowHtml: true,
+						  page: 'enable', 
+						  pageSize: 20,
+						  sortAscending: false,
+						  pagingButtonsConfiguration: 'auto'
+						  
+						 };
+
+						table.draw(data1, options);
+					//condition to export CSV
+					}else{
+						
+						dataTableToCSV(data1);
+						$('#table_div').text('');
+					}
+					//enable buttons for a new search
+					$('#show').prop('disabled', false);
+					$('#csv').prop('disabled', false);
+				},
+				//if an errors occurs print the error and enable both button for a new search
+				error: function(x, t, m) {
+				
+					if(t==="timeout") {
+						alert("got timeout");
+					} else {
+						alert(t);
+					}
+					$('#show').prop('disabled', false);
+					$('#csv').prop('disabled', false);
+					$('#table_div').text('');
+				}
+			});
+        }
+    }
+    //this function takes the data and transforms it to CSV format
+    function dataTableToCSV(dataTable_arg) {
+		var dt_cols = dataTable_arg.getNumberOfColumns();
+		var dt_rows = dataTable_arg.getNumberOfRows();
+		var csv_cols = [];
+		var csv_out;
+		// Iterate columns
+		for (var i=0; i<dt_cols; i++) {
+		// Replace any commas in column labels
+				csv_cols.push(dataTable_arg.getColumnLabel(i).replace(/,/g,""));
+		}
+		// Create column row of CSV
+		csv_out = csv_cols.join(",")+"\r\n";
+		// Iterate rows
+		for (i=0; i<dt_rows; i++) {
+			var raw_col = [];
+			for (var j=0; j<dt_cols; j++) {
+			// Replace any commas in row values
+			raw_col.push(dataTable_arg.getFormattedValue(i, j, 'label').replace(/,/g,""));
+			}
+			// Add row to CSV text
+			csv_out += raw_col.join(",")+"\r\n";
+		}
+						 
+		downloadCSV(csv_out);
+	}
+	//function to export CSV
+	function downloadCSV (csv_out) {
+		var blob = new Blob([csv_out], {type: 'text/csv;charset=utf-8'});
+		var url  = window.URL || window.webkitURL;
+		var link = document.createElementNS("http://www.w3.org/1999/xhtml", "a");
+		link.href = url.createObjectURL(blob);
+		link.download = "data.csv"; 
+			
+		var event = document.createEvent("MouseEvents");
+		event.initEvent("click", true, false);
+		link.dispatchEvent(event); 
+    }
+    
+    </script>
+    </body>
+</html>

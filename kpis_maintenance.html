@@ -1,0 +1,691 @@
+<?php
+include('lock.php');
+?>
+
+<html>
+<head>
+  <script type="text/javascript" src="libs/jquery.min.js"></script>
+  <link href='stylecss.css' rel='stylesheet' type "text/css"/>
+  <link href="libs/CalendarControl.css" rel="stylesheet" type="text/css">
+  <script src="libs/CalendarControl.js" language="javascript"></script>
+  <title>Weekly Report Maintenance</title>
+  <body>
+  <br>
+  <br>
+  <h1>Weekly Report Maintenance</h1>
+  <br>
+  <br>
+  
+  <center>
+  <div><table>
+  <tr>
+  <td><b>Select country to update: </b></td>
+  <td>&nbsp;&nbsp;<select name="paises" id="paises" selected="true" onchange="createTable(this.value)" style="width: 170px">
+		
+		
+		<option value="1" >Grenada</option>
+		<option value="2" >Jamaica</option>
+		<option value="3" >Curacao</option>
+		<option value="0" >Trinidad & Tobago</option>
+		<option value="4" >Panama</option>
+		<option value="5" >Honduras</option>
+		<option value="6" >Barbados</option>
+		<option value="7" >Puerto Rico</option>
+	</select>&nbsp;&nbsp;</td>
+	
+	</tr>
+  <tr>
+  <td><b>Select the sunday of the week to update:</b></td>
+  <td>&nbsp;&nbsp;<input style="width: 170px" id="date" name="date" onfocus="showCalendarControl(this);" type="text">&nbsp;&nbsp;</td>
+	<!--<td>&nbsp;&nbsp;<label style="width: 170px" id="week" name="week"></td>-->
+	
+	</tr>
+	<tr><td><br></td>
+	</tr>
+	<tr>
+	</br>
+		<td id="label1" >Safari MTA Sub Count</td>
+		<td>&nbsp;&nbsp;<input id="input1" style="width: 170px" onchange="onlyNumbers(this.value)" onkeyup="suma()"></td>
+	</tr>	
+	<tr>
+		<td id="label2">Safari SIP EP Sub Count</td>
+		<td>&nbsp;&nbsp;<input id="input2" style="width: 170px" onchange="onlyNumbers(this.value)" onkeyup="suma()"></td>
+	</tr>
+	<tr>
+		<td id="label3">TOTAL</td>
+		<td>&nbsp;&nbsp;<input id="input3" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>	
+	<tr>
+		<td id="label4">Rel Causes: Normal</td>
+		<td>&nbsp;&nbsp;<input id="input4" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>
+	<tr>
+		<td id="label5">Rel Causes: Other</td>
+		<td>&nbsp;&nbsp;<input id="input5" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>	
+	<tr>
+		<td id="label6">ACD(All Calls)</td>
+		<td>&nbsp;&nbsp;<input id="input6" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>
+	<tr>
+		<td id="label7">ASR(All Calls)</td>
+		<td>&nbsp;&nbsp;<input id="input7" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>	
+	<tr>
+		<td id="label8">Subs Weekly Mins</td>
+		<td>&nbsp;&nbsp;<input id="input8" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>
+	<tr>
+		<td id="label9">Carriers OUT Weekly Mins</td>
+		<td>&nbsp;&nbsp;<input id="input9" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>	
+	<tr>
+		<td id="label10">Corporate SIP Trunks Weekly Mins</td>
+		<td>&nbsp;&nbsp;<input id="input10" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>
+	<tr>
+		<td id="label11">Max MTA OOS Lines</td>
+		<td>&nbsp;&nbsp;<input id="input11" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>	
+	<tr>
+		<td id="label12">SIP Lines without Password</td>
+		<td>&nbsp;&nbsp;<input id="input12" style="width: 170px" onchange="onlyNumbers(this.value)"></td>
+	</tr>
+	<tr><td><br></td>
+	</tr>
+	<tr>
+	<td><button id="submit" onclick="submit()" style="width: 120px">Submit Data</button>
+		</td>
+	<td>&nbsp;&nbsp;
+		<button id="clear" onclick="clearFields()" style="width: 120px">Clear Fields</button>
+		</td>
+	</tr>
+  </table></div>
+  </center>
+  </body>
+  <script type="text/javascript">
+    
+	var today = new Date();
+	var dia = today.getDay();
+	//to get last sunday's date we substract the day number to the date
+	today.setDate(today.getDate()-dia);
+	
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	
+	var yyyy = today.getFullYear();
+	if(dd<10){
+		dd='0'+dd
+	}
+	if(mm<10){
+		mm='0'+mm
+	}
+	//today's date to initialize date inputs
+	var lastSu = mm+'-'+dd+'-'+yyyy;
+	
+	document.getElementById("date").value = lastSu;
+	
+	function clearFields(){
+		document.getElementById("input1").value="";
+		document.getElementById("input2").value="";
+		document.getElementById("input3").value="";
+		document.getElementById("input4").value="";
+		document.getElementById("input5").value="";
+		document.getElementById("input6").value="";
+		document.getElementById("input7").value="";
+		document.getElementById("input8").value="";
+		document.getElementById("input9").value="";
+		document.getElementById("input10").value="";
+		document.getElementById("input11").value="";
+		document.getElementById("input12").value="";
+	}
+	
+	function getWeekNumber(d) {
+		// Copy date so don't modify original
+		d = new Date(+d);
+		d.setHours(0,0,0);
+		// Set to nearest Thursday: current date + 4 - current day number
+		// Make Sunday's day number 7
+		d.setDate(d.getDate() + 4 - (d.getDay()||7));
+		// Get first day of year
+		var yearStart = new Date(d.getFullYear(),0,1);
+		// Calculate full weeks to nearest Thursday
+		var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+		// Return array of year and week number
+		return [d.getFullYear(), weekNo];
+	}
+	
+	function onlyNumbers(number){
+		 if (!/^([0-9])\d*(?:\.\d{0,2})?$/.test(number)){
+			alert("Please only use numbers in the input");
+		}
+	}
+	function suma(){
+	var val = (document.getElementById('paises').value);
+		if(val==0 || val==1 ||val==2 ||val==3){
+			
+			var v1 = document.getElementById('input1').value;
+			var v2 = document.getElementById('input2').value;
+			v1 = v1.trim();
+			v2 = v2.trim();
+			if(v1==''){
+				v1=0;
+			}else{
+				var v1 = parseInt(v1);
+			}
+			if(v2==''){
+				v2=0;
+			}else{
+				var v2 = parseInt(v2);
+			}
+			var sum = v1+v2;
+			document.getElementById("input3").value=sum;
+		}
+	}
+	function createTable(val){
+		clearFields();
+		if(val==0){
+			$('#label1').text('Safari MTA Sub Count');
+			$('#label2').text('Safari SIP EP Sub Count');
+			$('#label3').text('TOTAL');
+			$('#label4').text('Rel Causes: Normal');
+			$('#label5').text('Rel Causes: Other');
+			$('#label6').text('ACD(All Calls)');
+			$('#label7').text('ASR(All Calls)');
+			$('#label8').text('Subs Weekly Mins');
+			$('#label9').text('Corporate SIP Trunks Weekly Mins');
+			$('#label10').text('Max MTA OOS Lines');
+			$('#label11').text('SIP Lines without Password');
+			$('#label1').show();
+			$('#label2').show();
+			$('#label3').show();
+			$('#label4').show();
+			$('#label5').show();
+			$('#label6').show();
+			$('#label7').show();
+			$('#label8').show();
+			$('#label9').show();
+			$('#label10').show();
+			$('#label11').show();
+			$('#label12').hide();
+			
+			$('#input1').show();
+			$('#input2').show();
+			$('#input3').show();
+			$('#input4').show();
+			$('#input5').show();
+			$('#input6').show();
+			$('#input7').show();
+			$('#input8').show();
+			$('#input9').show();
+			$('#input10').show();
+			$('#input11').show();
+			$('#input12').hide();
+		}else if(val==1 || val==2 || val==3){
+			$('#label1').text('Safari MTA Sub Count');
+			$('#label2').text('Safari SIP EP Sub Count');
+			$('#label3').text('TOTAL');
+			$('#label4').text('Rel Causes: Normal');
+			$('#label5').text('Rel Causes: Other');
+			$('#label6').text('ACD(All Calls)');
+			$('#label7').text('ASR(All Calls)');
+			$('#label8').text('Subs Weekly Mins');
+			$('#label9').text('Carriers OUT Weekly Mins');
+			$('#label10').text('Corporate SIP Trunks Weekly Mins');
+			$('#label11').text('Max MTA OOS Lines');
+			$('#label12').text('SIP Lines without Password');
+			$('#label1').show();
+			$('#label2').show();
+			$('#label3').show();
+			$('#label4').show();
+			$('#label5').show();
+			$('#label6').show();
+			$('#label7').show();
+			$('#label8').show();
+			$('#label9').show();
+			$('#label10').show();
+			$('#label11').show();
+			$('#label12').show();
+			
+			$('#input1').show();
+			$('#input2').show();
+			$('#input3').show();
+			$('#input4').show();
+			$('#input5').show();
+			$('#input6').show();
+			$('#input7').show();
+			$('#input8').show();
+			$('#input9').show();
+			$('#input10').show();
+			$('#input11').show();
+			$('#input12').show();
+		}else if(val==4){
+			$('#label1').text('Meta Subs Count');
+			$('#label2').text('SIP Binding Active Licenses');
+			$('#label3').text('Rel Causes: Normal');
+			$('#label4').text('Business Groups(Centrex)');
+			$('#label5').text('Rel Causes: Other');
+			$('#label6').text('Total Weekly Mins');
+			$('#label1').show();
+			$('#label2').show();
+			$('#label3').show();
+			$('#label4').show();
+			$('#label5').show();
+			$('#label6').show();
+			$('#label7').hide();
+			$('#label8').hide();
+			$('#label9').hide();
+			$('#label10').hide();
+			$('#label11').hide();
+			$('#label12').hide();
+			
+			$('#input1').show();
+			$('#input2').show();
+			$('#input3').show();
+			$('#input4').show();
+			$('#input5').show();
+			$('#input6').show();
+			$('#input7').hide();
+			$('#input8').hide();
+			$('#input9').hide();
+			$('#input10').hide();
+			$('#input11').hide();
+			$('#input12').hide();
+		}else if(val==5){
+			$('#label1').text('Sip Trunks (Quantity)');
+			$('#label2').text('Max-Active Calls on Week');
+			$('#label3').text('Rel Causes: Other');
+			$('#label4').text('ASR(All Calls)');
+			$('#label5').text('Business Groups(Centrex)');
+			$('#label6').text('Meta Subs Count');
+			$('#label7').text('ACD(All Calls)');
+			$('#label8').text('Total Weekly Mins');
+			$('#label9').text('Total Weekly Mins(Hondutel)');
+			$('#label1').show();
+			$('#label2').show();
+			$('#label3').show();
+			$('#label4').show();
+			$('#label5').show();
+			$('#label6').show();
+			$('#label7').show();
+			$('#label8').show();
+			$('#label9').show();
+			$('#label10').hide();
+			$('#label11').hide();
+			$('#label12').hide();
+			
+			$('#input1').show();
+			$('#input2').show();
+			$('#input3').show();
+			$('#input4').show();
+			$('#input5').show();
+			$('#input6').show();
+			$('#input7').show();
+			$('#input8').show();
+			$('#input9').show();
+			$('#input10').hide();
+			$('#input11').hide();
+			$('#input12').hide();
+		}else if(val==6){
+			$('#label1').text('Subscribers with Voicemail');
+			$('#label2').text('Sip Trunks (Quantity)');
+			$('#label3').text('ASR(All Calls)');
+			$('#label4').text('Business Groups(Centrex)');
+			$('#label5').text('Total Weekly Mins');
+			$('#label6').text('Total Calix Subs');
+			$('#label7').text('Total Calix Subs Mins');
+			
+			$('#label1').show();
+			$('#label2').show();
+			$('#label3').show();
+			$('#label4').show();
+			$('#label5').show();
+			$('#label6').show();
+			$('#label7').show();
+			$('#label8').hide();
+			$('#label9').hide();
+			$('#label10').hide();
+			$('#label11').hide();
+			$('#label12').hide();
+			
+			$('#input1').show();
+			$('#input2').show();
+			$('#input3').show();
+			$('#input4').show();
+			$('#input5').show();
+			$('#input6').show();
+			$('#input7').show();
+			$('#input8').hide();
+			$('#input9').hide();
+			$('#input10').hide();
+			$('#input11').hide();
+			$('#input12').hide();
+		}else{
+			$('#label1').text('Sip Trunks (Quantity)');
+			$('#label2').text('Max-Active Calls on Week');
+			$('#label3').text('ASR(All Calls)');
+			$('#label4').text('Business Groups(Centrex)');
+			$('#label5').text('ACD(All Calls)');
+			$('#label6').text('Total Weekly Mins');
+			
+			$('#label1').show();
+			$('#label2').show();
+			$('#label3').show();
+			$('#label4').show();
+			$('#label5').show();
+			$('#label6').show();
+			$('#label7').hide();
+			$('#label8').hide();
+			$('#label9').hide();
+			$('#label10').hide();
+			$('#label11').hide();
+			$('#label12').hide();
+			
+			$('#input1').show();
+			$('#input2').show();
+			$('#input3').show();
+			$('#input4').show();
+			$('#input5').show();
+			$('#input6').show();
+			$('#input7').hide();
+			$('#input8').hide();
+			$('#input9').hide();
+			$('#input10').hide();
+			$('#input11').hide();
+			$('#input12').hide();
+		}
+	}
+	
+	function submit(){
+	
+	var date1 = document.getElementById('date').value;
+	
+	var year1 = date1.substring(6,10);
+	var day1 = date1.substring(3,5);
+	var month1 = date1.substring(0,2);
+	
+	date1 = year1+'-'+month1+'-'+day1;
+	
+	var val = document.getElementById('paises').value;
+	
+	var v1 = document.getElementById('input1').value;
+	var v2 = document.getElementById('input2').value;
+	var v3 = document.getElementById('input3').value;
+	var v4 = document.getElementById('input4').value;
+	var v5 = document.getElementById('input5').value;
+	var v6 = document.getElementById('input6').value;
+	var v7 = document.getElementById('input7').value;
+	var v8 = document.getElementById('input8').value;
+	var v9 = document.getElementById('input9').value;
+	var v10 = document.getElementById('input10').value;
+	var v11 = document.getElementById('input11').value;
+	var v12 = document.getElementById('input12').value;
+	v1 = v1.trim();
+	v2 = v2.trim();
+	v3 = v3.trim();
+	v4 = v4.trim();
+	v5 = v5.trim();
+	v6 = v6.trim();
+	v7 = v7.trim();
+	v8 = v8.trim();
+	v9 = v9.trim();
+	v10 = v10.trim();
+	v11 = v11.trim();
+	v12 = v12.trim();
+	
+		if(val==0){
+			if(v1=='' || v2=='' || v3=='' || v4=='' || v5=='' || v6=='' || v7=='' || v8=='' || v9=='' || v10=='' || v11==''){
+				alert('ingrese todos los datos!!');
+				return false;
+			}else{
+				$.ajax({
+					type: 'POST',
+					url: "confirmation.php",
+					data: {country:val, date:date1},
+					success: function(data){
+						var id = data;
+						if(id==0){
+							$.ajax({
+								url: "kpis_maintenance.php",
+								data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, input8:v8,input9:v9, input10:v10,input11:v11,country:val, date:date1, id:id},
+								type: 'POST',
+								success: function(data){
+								 alert (data);
+								}
+							});
+						}else {
+							var statusConfirm = confirm("This country has data for this date.\nDo you want to replace the data?"); 
+							if(statusConfirm==true){
+								$.ajax({
+								url: "kpis_maintenance.php",
+								data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, input8:v8,input9:v9, input10:v10,input11:v11, country:val, date:date1, id:id},
+								type: 'POST',
+								success: function(data){
+								 alert (data);
+								}
+							});
+							}else{
+								return false;
+							}
+						 }
+					}
+				});
+				
+			}
+			}else if(val==1 || val==2 || val==3){
+			if(v1=='' || v2=='' || v3=='' || v4=='' || v5=='' || v6=='' || v7=='' || v8=='' || v9=='' || v10=='' || v11=='' || v12==''){
+				alert('ingrese todos los datos!!');
+				return false;
+			}else{
+				$.ajax({
+					type: 'POST',
+					url: "confirmation.php",
+					data: {country:val, date:date1},
+					success: function(data){
+						var id = data;
+						if(id==0){
+							$.ajax({
+								url: "kpis_maintenance.php",
+								data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, input8:v8,input9:v9, input10:v10,input11:v11, input12:v12, country:val, date:date1, id:id},
+								type: 'POST',
+								success: function(data){
+								 alert (data);
+								}
+							});
+						}else {
+							var statusConfirm = confirm("This country has data for this date.\nDo you want to replace the data?"); 
+							if(statusConfirm==true){
+								$.ajax({
+								url: "kpis_maintenance.php",
+								data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, input8:v8,input9:v9, input10:v10,input11:v11, input12:v12, country:val, date:date1, id:id},
+								type: 'POST',
+								success: function(data){
+								 alert (data);
+								}
+							});
+							}else{
+								return false;
+							}
+						 }
+					}
+				});
+				
+			}
+		}else if(val==4){
+			if(v1=='' || v2=='' || v3=='' || v4=='' || v5=='' || v6==''){
+				alert('ingrese todos los datos!!');
+				return false;
+			}else{
+			
+			$.ajax({
+					url: "confirmation.php",
+					data: {country:val, date:date1},
+					type: 'POST',
+					success: function(data){
+						var id = data;
+						if(id==0){
+					 
+						 $.ajax({
+								url: "kpis_maintenance.php",
+								data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6, country:val, date:date1, id:id},
+								type: 'POST',
+								success: function(data){	
+								 alert (data);
+								}
+							});
+							
+						 } else {
+							var statusConfirm = confirm("This country has data for this date.\nDo you want to replace the data?"); 
+							if(statusConfirm==true){
+								$.ajax({
+								url: "kpis_maintenance.php",
+								data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6, country:val, date:date1, id:id},
+								type: 'POST',
+								success: function(data){	
+								 alert (data);
+								}
+							});
+							}else{
+								return false;
+							}
+						 }
+					}
+				});
+			
+			}
+			
+		}else if(val==5){
+			if(v1=='' || v2=='' || v3=='' || v4=='' || v5=='' || v6=='' || v7=='' || v8=='' || v9==''){
+				alert('ingrese todos los datos!!');
+				return false;
+			}else{
+			
+					$.ajax({
+					url: "confirmation.php",
+					data: {country:val, date:date1},
+					type: 'POST',
+					success: function(data){
+					var id = data;
+						if(id==0){
+					 
+						 $.ajax({
+							url: "kpis_maintenance.php",
+							data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, input8:v8,input9:v9, country:val, date:date1, id:id},
+							type: 'POST',
+							success: function(data){	
+							 alert (data);
+							}
+						});
+							
+						 } else {
+							var statusConfirm = confirm("This country has data for this date.\nDo you want to replace the data?"); 
+							if(statusConfirm==true){
+								$.ajax({
+									url: "kpis_maintenance.php",
+									data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, input8:v8,input9:v9, country:val, date:date1, id:id},
+									type: 'POST',
+									success: function(data){	
+									 alert (data);
+									}
+								});
+							}else{
+								return false;
+							}
+						 }
+					}
+				});
+					
+			}
+		}else if(val==6){
+			if(v1=='' || v2=='' || v3=='' || v4=='' || v5=='' || v6=='' || v7==''){
+				alert('ingrese todos los datos!!');
+				return false;
+			}else{
+				
+				$.ajax({
+					url: "confirmation.php",
+					data: {country:val, date:date1},
+					type: 'POST',
+					success: function(data){
+					var id = data;
+						if(id==0){
+					 
+						 $.ajax({
+							url: "kpis_maintenance.php",
+							data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, country:val, date:date1, id:id},
+							type: 'POST',
+							success: function(data){	
+							 alert (data);
+							}
+						});
+							
+						 } else {
+							var statusConfirm = confirm("This country has data for this date.\nDo you want to replace the data?"); 
+							if(statusConfirm==true){
+								$.ajax({
+									url: "kpis_maintenance.php",
+									data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6,input7:v7, country:val, date:date1, id:id},
+									type: 'POST',
+									success: function(data){	
+									 alert (data);
+									}
+								});
+							}else{
+								return false;
+							}
+						 }
+					}
+				});
+				
+				
+			}
+		}else if(val==7){
+			if(v1=='' || v2=='' || v3=='' || v4=='' || v5=='' || v6==''){
+				alert('ingrese todos los datos!!');
+				return false;
+			}else{
+			
+				$.ajax({
+					url: "confirmation.php",
+					data: {country:val, date:date1},
+					type: 'POST',
+					success: function(data){
+						var id = data;
+						if(id==0){
+					 
+						  $.ajax({
+							url: "kpis_maintenance.php",
+							data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6, country:val, date:date1, id:id},
+							type: 'POST',
+							success: function(data){	
+							 alert (data);
+							}
+						});
+							
+						 } else {
+							var statusConfirm = confirm("This country has data for this date.\nDo you want to replace the data?"); 
+							if(statusConfirm==true){
+								$.ajax({
+									url: "kpis_maintenance.php",
+									data: {input1:v1, input2:v2,input3:v3, input4:v4,input5:v5, input6:v6, country:val, date:date1, id:id},
+									type: 'POST',
+									success: function(data){	
+									 alert (data);
+									}
+								});
+							}else{
+								return false;
+							}
+						 }
+					}
+				});
+				
+				
+			}
+		}
+	}
+  </script>
+ </head>
+ 
+</html>
+

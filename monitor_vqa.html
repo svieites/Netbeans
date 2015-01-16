@@ -1,0 +1,433 @@
+<html>
+	<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <link href='stylecss.css' rel='stylesheet' type "text/css"/>
+	<link rel="shortcut icon" href="imagenes/logo_paginas.png">
+	<title>VQA Monitor</title>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		
+		<script type="text/javascript">
+		
+		google.load("visualization", "1", {packages:["gauge","corechart","table"]});
+		
+		var paises = ['Barbados','Curacao','Grenada','Jamaica','Panama','PuertoRico','TrinidadTobago','CloudVoice'];
+		var paises2 = ['Barbados','Curacao','Grenada','Jamaica','Panama','Puerto Rico','Trinidad & Tobago','CloudVoice'];
+		
+		var x = 0;
+		var y = 0;
+		
+		function update(){
+		
+			if(x > 7){
+				x=0;
+				if(y==0){
+					y=1;
+				}else {
+					y=0;
+				}
+			}
+			
+			if (y==0){
+				drawChart(paises[x]);
+				
+				$('#table1').show();
+				$('#up1').show();
+				$('#up2').show();
+				$('#up3').show();
+				$('#LU1').show();
+				$('#LU2').show();
+				$('#LU3').show();
+				$('#chart1_div').show();
+				$('#chart1_div2').show();
+				$('#chart1_div3').show();
+				$('#chart1_div4').show();
+				$('#chart_div').hide();
+				$('#chart_div2').hide();
+				$('#chart_div3').hide();
+				$('#chart_div4').hide();
+				$('#table_div').hide();
+				$('#bar_div').hide();
+				$('#obs').hide();
+			} else if(y==1){
+				
+				drawChart2(paises[x]);
+				
+				$('#LU1').hide();
+				$('#LU2').hide();
+				$('#LU3').hide();
+				$('#up1').hide();
+				$('#up2').hide();
+				$('#up3').hide();
+				$('#chart1_div').hide();
+				$('#chart1_div2').hide();
+				$('#chart1_div3').hide();
+				$('#chart1_div4').hide();
+				$('#chart_div').show();
+				$('#chart_div2').show();
+				$('#chart_div3').show();
+				$('#chart_div4').show();
+				$('#table_div').show();
+				$('#bar_div').show();
+				$('#obs').show();
+				$('#table1').hide();
+				
+			}
+			
+			x++;
+		}
+		
+		function drawChart(pais){
+			//var pais='Curacao';
+			//var pais = paises[x];
+			//alert(pais);
+			$.ajax({
+						url: "vqa_monitor.php",
+						data: {
+							pais:pais
+						},
+						type:'post',
+						dataType: "json",
+						success: function(data){
+							
+							var asr = parseInt(data.asr);
+							var ner = parseInt(data.ner);
+							var mean_asr = parseInt(data.mean_asr);
+							var mean_ner = parseInt(data.mean_ner);
+							var update = data.update;
+							
+							//alert(update.toString());
+							
+							$('#LU1').text(update);
+							$('#LU2').text(update);
+							$('#LU3').text(update);
+							
+							var data1 = new google.visualization.DataTable(data.lines_asr);
+		
+							var data4 = new google.visualization.DataTable(data.lines_ner);
+							 
+							var data2 = new google.visualization.arrayToDataTable([
+							  ['Label', 'Value'],
+							  ['ASR', asr],
+							  
+							]);
+							
+							var data3 = new google.visualization.arrayToDataTable([
+							  ['Label', 'Value'],
+							  ['NER', ner],
+							  
+							]);
+							
+							var options = {
+							 legend:{textStyle:{color: '#000000',fontSize: '12'}},
+							 title:'ASR Weekly ',
+							 backgroundColor: 'transparent',
+							 //title: 'ASR Panama',
+							  hAxis: {textStyle:{color: '#000000',fontSize:'12'},direction:1, slantedText:true, slantedTextAngle:45 },
+							  vAxis: {textStyle:{color: '#000000',fontSize: '12', paddingRight: '100',marginRight: '100'}},
+							  //hAxis: {title: 'Día', titleTextStyle: {color: 'red'}},
+							  is3D: 'true',
+							  width: 1250,
+							  height: 350,
+							  pointSize: 12,
+							  colors: ['#F96302', '#CC0C00', '#00BFFF', '#7FBA00'],
+							  series: {
+									0: { pointShape: 'circle' },
+									1: { pointShape: 'triangle' },
+									2: { pointShape: 'square' },
+									3: { pointShape: 'diamond' },
+								  //  4: { pointShape: 'star' },
+									//5: { pointShape: 'polygon' }
+								}
+							  
+							};
+
+							
+							
+							var options4 = {
+							legend: {textStyle:{color: '#000000', fontSize: '12'}},
+							title:'NER Weekly ',
+							 backgroundColor: 'transparent',		
+							
+							  hAxis: {textStyle:{color: '#000000', fontSize: '12'},direction:1, slantedText:true, slantedTextAngle:45},
+							  vAxis: {textStyle:{color: '#000000', fontSize: '12'}},
+							  
+							  is3D: 'true',
+							  width: 1250,
+							  height: 350,
+							  pointSize: 12,
+							  colors: ['#F96302', '#CC0C00', '#00BFFF', '#7FBA00'],
+							  series: {
+									0: { pointShape: 'circle' },
+									1: { pointShape: 'triangle' },
+								    2: { pointShape: 'square' },
+									3: { pointShape: 'diamond' },
+								  
+								}
+							};
+							var options2 = {
+							  width: 350, height: 150,
+							  greenFrom: (mean_asr-2), greenTo: 100,
+							  yellowFrom: (mean_asr-12), yellowTo: (mean_asr-2),
+							  minorTicks: 5
+							};
+
+							var options3 = {
+							  width: 350, height: 150,
+							  greenFrom: (mean_ner-2), greenTo: 100,
+							  yellowFrom: (mean_ner-12), yellowTo: (mean_ner-2),
+							  minorTicks: 5
+							};
+							
+							var chart = new google.visualization.LineChart(document.getElementById('chart1_div'));
+							chart.draw(data1, options);
+						
+							var chart2 = new google.visualization.Gauge(document.getElementById('chart1_div2'));
+							chart2.draw(data2, options2);
+							
+							var chart3 = new google.visualization.Gauge(document.getElementById('chart1_div3'));
+							chart3.draw(data3,options3);
+							
+							var chart4 = new google.visualization.LineChart(document.getElementById('chart1_div4'));
+							chart4.draw(data4,options4);
+							
+							$('#titulo').text(paises2[x-1] +' report');
+						}
+					});
+			
+		}
+		
+		function drawChart2(pais) {
+	  //var pais='Curacao';
+		$.ajax({
+					url: "traffic_monitor.php",
+					data: {
+						pais:pais
+					},
+					type:'post',
+					dataType: "json",
+					success: function(data){
+					
+					var asr = parseInt(data.asr);
+					var ner = parseInt(data.ner);
+					var calls = parseInt(data.calls);
+					var min = parseInt(data.min);
+					var mean_asr = parseInt(data.mean_asr);
+					var mean_ner = parseInt(data.mean_ner);
+					var mean_min = parseInt(data.mean_min);
+					var mean_calls = parseInt(data.mean_calls);
+					var reg_min0 = parseInt(data.reg_min0);
+					var reg_min1 = parseInt(data.reg_min1);
+					var reg_min2 = parseInt(data.reg_min2);
+					var reg_min3 = parseInt(data.reg_min3);
+					var reg_min4 = parseInt(data.reg_min4);
+					var reg_name0 = data.reg_name0.toString();
+					var reg_name1 = data.reg_name1.toString();
+					var reg_name2 = data.reg_name2.toString();
+					var reg_name3 = data.reg_name3.toString();
+					var reg_name4 = data.reg_name4.toString();
+					var obs = data.obs;
+					var callsOthers = parseInt(data.callsOthers);
+					
+					//alert(reg_name0);
+					//alert(obs);
+					
+					var data1 = new google.visualization.arrayToDataTable([
+						  ['Label', 'Value'],
+						  ['ASR', asr],
+						  
+						]);
+						
+						var data2 = new google.visualization.arrayToDataTable([
+						  ['Label', 'Value'],
+						  ['NER', ner],
+						  
+						]);
+						
+						var data3 = new google.visualization.arrayToDataTable([
+						  ['Label', 'Value'],
+						  ['Calls', calls],
+						  
+						]);
+						
+						var data6 = new google.visualization.arrayToDataTable([
+						  ['Label', 'Value'],
+						  ['Min', min],
+						  
+						]);
+						
+						var data7 = new google.visualization.DataTable(data.table);
+						
+						var data8 = new google.visualization.arrayToDataTable([
+							['Region',reg_name0,reg_name1,reg_name2,reg_name3,reg_name4,'Others',{ role: 'annotation' } ],
+							['Min per Region',reg_min0,reg_min1,reg_min2,reg_min3,reg_min4,callsOthers,''],
+						
+						]);
+						
+						var table = new google.visualization.Table(document.getElementById('table_div'));
+						
+						var options = {
+						  width: 280, height: 140,
+						  greenFrom: (mean_asr-2), greenTo: 100,
+						  yellowFrom: (mean_asr-12), yellowTo: (mean_asr-2),
+						  minorTicks: 5
+						};
+
+						var options2 = {
+						  width: 280, height: 140,
+						  greenFrom: (mean_ner-2), greenTo: 100,
+						  yellowFrom: (mean_ner-12), yellowTo: (mean_ner-2),
+						  minorTicks: 5
+						};
+						
+						var options3 = {
+					
+						  width: 280, height: 140,
+						  yellowFrom: (mean_calls*0.85), yellowTo: (mean_calls*0.9),
+						  greenFrom: (mean_calls*0.9), greenTo: (mean_calls*1.1),
+						  redFrom: (mean_calls*1.1),redTo: (mean_calls*1.15),
+						  redColor:'#FF9900',
+						  minorTicks: 5,
+						  max: (mean_calls*2)
+						};
+						
+						
+						
+						var options6 = {
+						  width: 280, height: 140,
+						  yellowFrom: (mean_min*0.85), yellowTo: (mean_min*0.9),
+						  greenFrom: (mean_min*0.9), greenTo: (mean_min*1.1),
+						  redFrom: (mean_min*1.1),redTo: (mean_min*1.15),
+						  redColor:'#FF9900',
+						  minorTicks: 5,
+						  max: (mean_min*2)
+						};	
+						
+						var options8 = {
+						backgroundColor: 'transparent',
+							width: 1250,
+							height: 100,
+							 hAxis: {textStyle:{color: '#000000'}},
+							vAxis: {textStyle:{color: '#000000'}},
+							legend: {textStyle:{color: '#000000'}, position: 'top', maxLines: 0 },
+							bar: { groupWidth: '75%' },
+							colors: ['#FF4000', '#DF0101', '#00BFFF', '#31B404', '#FF00BF', '#8258FA'],
+							isStacked: true
+					  };
+						
+						var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+						chart.draw(data1, options);
+						
+						var chart2 = new google.visualization.Gauge(document.getElementById('chart_div2'));
+						chart2.draw(data2,options2);
+						
+						var chart3 = new google.visualization.Gauge(document.getElementById('chart_div3'));
+						chart3.draw(data3,options3);
+						
+						
+						var chart6 = new google.visualization.Gauge(document.getElementById('chart_div4'));
+						chart6.draw(data6,options6);
+						
+						//var formatter = new google.visualization.ColorFormat();
+						//formatter.addRange(0,1000, 'red', '');
+						//formatter.format(jsonData7,1);
+						table.draw(data7, {allowHtml: true,showRowNumber: true});
+						
+						var chart7 = new google.visualization.BarChart(document.getElementById('bar_div'));
+						chart7.draw(data8,options8);
+						
+						//$('#obs').text(obs);
+						$('#titulo').text(paises2[x-1] +' report');
+						$('#obs').text('');
+						var sel = document.getElementById('obs');
+						for(var i = 0; i < obs.length; i++) {
+							var opt = document.createElement('option');
+							opt.innerHTML = obs[i];
+							opt.value = obs[i];
+							sel.appendChild(opt);
+						}
+					
+				}
+			});
+		
+      }
+		
+		update();
+		//setInterval(update,45000);
+		setInterval(update,10000);
+		</script>
+		<body>
+			
+		<div class="wrap4"><img style="width:189px; height:58px; title="Logo Columbus" alt="Columbus Logo" src="imagenes/columbus_logo.png"></div>
+		<h1 id="titulo"></h1>
+			<center><table id="table1">
+			<tr>
+				<td>
+				<br><br><div id="chart1_div"> </div>		
+				</td>		
+				<td>	
+					<br><br><br><br><div id="chart1_div2"> </div>
+					<center> <h2 id="up2"> Last Update:  </h2>
+					 <p><h2 id="LU1"></h2></p></center>
+				</td>	
+			</tr>
+			
+				<tr>
+					<td>
+						&nbsp;
+						<div id="chart1_div4"></div>
+					</td>
+					<td>
+					<br><br><br><div id="chart1_div3">
+					
+					<CENTER><h2 id="up2">Last Update: <P id="LU2"></P></div></h2></center>
+					<CENTER><h2 id="up3">Last Update: <P id="LU3"></P></h2></center>
+					</td>
+				</tr>
+				
+			</table></center>
+	<center><table>
+	<br>
+	<br>
+	<tr>
+		<td>	
+			<div id="chart_div"align="justify"></div>
+		</td>	
+		<td>	
+			<div id="chart_div2"align="justify"></div>
+		</td>	
+		<td>	
+			<div id="chart_div3"align="justify"></div>
+		</td>	
+		
+		<td>	
+			<div id="chart_div4"align="justify"></div>
+		</td>
+		</tr>	
+	</table></center>
+	
+	<BR><CENTER><tr>
+		<br><td>
+			<div id="table_div"align="middle"style="width:1250px"></div>
+		</td>	
+	</tr></CENTER>
+	
+	<table align="middle" style="width:1600px">
+	<br>
+			<tr>
+				<td style="height: 68px; width: 150px;"></td>
+				<td style="height: 68px; width: 533px;"><text align="justify"><h7 id="obs"></h7></text></td>
+				<td style="height: 68px; width: 533px;"></td>	
+			</tr>
+		
+	</table>
+
+	<center><TABLE>
+	<br><tr>
+		<td>
+			<div id="bar_div"align="justify"></div>			
+		</td>	
+	</tr></TABLE></center>
+		</body>
+	</head>
+</html>

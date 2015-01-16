@@ -1,0 +1,367 @@
+<?php
+include('lock.php');
+?>
+
+<html>
+	<head>
+    <title>Weekly Report</title>
+	<link href='stylecss.css' rel='stylesheet' >
+	<link href="libs/CalendarControl.css" rel="stylesheet" type="text/css">
+	<script src="libs/CalendarControl.js" language="javascript"></script>
+    <script type="text/javascript" src="libs/jquery.min.js"></script>
+	<script src="libs/highcharts.js"></script>
+	<script src="libs/exporting.js"></script>
+	
+	<script type="text/javascript" src="libs/jspdf.js"></script>
+	<script type="text/javascript" src="libs/jspdf.min.js"></script>
+	
+	<script src="libs/rgbcolor.js"></script>
+	<script src="libs/canvg.js"></script>
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        </head>
+	<body>
+	<br><br><h1>Weekly Report</h1><br><br>
+			<center><div id="table2"><table>
+			  <tr>
+			    <td><br></td>
+			  </tr>
+			  <tr>
+				<td>Select begin date:</td>
+				<td>&nbsp;&nbsp;<input style="width: 170px" id="begin_date" onfocus="showCalendarControl(this);"></td>
+				<td>&nbsp;&nbsp;Select end date:</td>
+				<td>&nbsp;&nbsp;<input style="width: 170px" id="end_date" onfocus="showCalendarControl(this);"></td>
+				<td>&nbsp;&nbsp;<button style="width: 80px" onclick="drawCharts()">Show</button></td>
+			  </tr>
+			  <tr>
+				<td>Type of customer:</td>
+				<td>&nbsp;&nbsp;<select style="width: 170px" id="graph" onchange="fillCountry(this.value)">
+					<option value="">Select an option</option>
+					<option value="0">Residential</option>
+					<option value="1">Total Residential</option>
+					<option value="2">Business Groups</option>
+					<option value="3">Total Business Groups</option
+					
+				</select></td>
+				
+				<td>&nbsp;&nbsp;Select country:</td>
+				<td>&nbsp;&nbsp;<select style="width: 170px" id="countries" onchange="">
+				</select></td>
+				<td>&nbsp;&nbsp;<button id="export" style="width: 80px">Export</button></td>
+			  </tr>
+			  <tr>
+			    <td><br></td>
+			  </tr>
+			</table></div>
+			<br>
+			<p><h2 id="titulo" align="center"></h2></p>
+			
+			<br>
+			<div id="table_div" align="center" style="width:920px"></div>
+			
+			<br>
+			<div id="chart_div" class="myChart"  align="center" style="width: 920px; height: 250px"></div>
+			<br>
+			
+			<div id="chart_div2" class="myChart"  align="center" style="width: 920px; height: 250px"></div>
+			
+			<br>
+			<div id="chart_div3" class="myChart"  align="center" style="width: 920px; height: 250px"></div>
+                        </center>
+	</body>
+		<script type="text/javascript">
+			google.load("visualization", "1.1", {packages:["table"]});
+			
+			var chart;
+			var chart2;
+			var chart3;
+			
+			(function (H) {
+				H.Chart.prototype.createCanvas = function (divId) {
+					var svg = this.getSVG(),
+						width = parseInt(svg.match(/width="([0-9]+)"/)[1]),
+						height = parseInt(svg.match(/height="([0-9]+)"/)[1]),
+						canvas = document.createElement('canvas');
+
+					canvas.setAttribute('width', width);
+					canvas.setAttribute('height', height);
+
+					if (canvas.getContext && canvas.getContext('2d')) {
+
+						canvg(canvas, svg);
+
+						return canvas.toDataURL("image/jpeg");
+
+					} 
+					else {
+						alert("Your browser doesn't support this feature, please use a modern browser");
+						return false;
+					}
+
+				}
+			}(Highcharts));
+			
+			var today = new Date();
+				var oneMonthAgo = new Date();
+				oneMonthAgo.setMonth(oneMonthAgo.getMonth()-1);
+				
+				var dd = today.getDate();
+				var mm = today.getMonth()+1; //January is 0!
+				
+				var yyyy = today.getFullYear();
+				if(dd<10){
+					dd='0'+dd
+				}
+				if(mm<10){
+					mm='0'+mm
+				}
+				//today's date to initialize date inputs
+				var today = mm+'-'+dd+'-'+yyyy;
+				
+				var dd2 = oneMonthAgo.getDate();
+				var mm2 = oneMonthAgo.getMonth()+1; //January is 0!
+				
+				var yyyy2 = oneMonthAgo.getFullYear();
+				if(dd2<10){
+					dd2='0'+dd2
+				}
+				if(mm2<10){
+					mm2='0'+mm2
+				}
+				//oneMonthAgo's date to initialize date inputs
+				var oneMonthAgo = mm2+'-'+dd2+'-'+yyyy2;
+				
+				document.getElementById("begin_date").value = oneMonthAgo;
+				document.getElementById("end_date").value = today;
+			
+			
+			$('#export').click(function () {
+				
+				var doc = new jsPDF();
+				
+				//change charts background before exporting them
+				chart.options.chart.backgroundColor = 'white';
+				chart.redraw();
+				
+				chart2.options.chart.backgroundColor = 'white';
+				chart2.redraw();
+				
+				chart3.options.chart.backgroundColor = 'white';
+				chart3.redraw();
+				
+				//get Title for pdf document
+				var ghead = document.getElementsByTagName('h2');
+				var gh = ghead[0];
+				var title = gh.innerHTML;
+				
+				// chart height defined here so each chart can be placed
+				// in a different position
+				var chartHeight = 40;
+				
+				// All units are in the set measurement for the document
+				// This can be changed to "pt" (points), "mm" (Default), "cm", "in"
+				doc.setFontSize(15);
+				doc.text(30, 15, title);
+				
+				//loop through each chart
+				$('.myChart').each(function (index) {
+					var imageData = $(this).highcharts().createCanvas();
+					
+					// add image to doc, if you have lots of charts,
+					// you will need to check if you have gone bigger 
+					// than a page and do doc.addPage() before adding 
+					// another image.
+					
+					/**
+					* addImage(imagedata, type, x, y, width, height)
+					*/
+					doc.addImage(imageData, 'JPEG', 30, (index * chartHeight) + 30, 140, chartHeight);
+				});
+				
+				
+				//save with name
+				doc.save('document.pdf');
+				
+				//set charts background back to null to display
+				chart.options.chart.backgroundColor = null;
+				chart.redraw();
+				
+				chart2.options.chart.backgroundColor = null;
+				chart2.redraw();
+				
+				chart3.options.chart.backgroundColor = null;
+				chart3.redraw();
+				
+			});
+			
+			function drawCharts(){
+					//chart options
+					var options = {
+						chart: {
+							//renderTo: 'chart_div',
+							backgroundColor: null
+							
+						},
+						navigation: {
+							buttonOptions: {
+								enabled: false
+							}
+						},
+						credits: {
+							enabled: false
+						},
+						title: {
+							text: null
+						},
+						xAxis: {
+							categories: [{}]
+						},
+						yAxis: {
+							title: {
+								text: 'Minutes',
+								min: 0,
+								tickInterval: 1
+							}
+						},
+						/*legend: {
+							layout: 'horizontal',
+							align: 'left',
+							verticalAlign: 'bottom',
+							floating: false,
+							borderWidth: 0
+						},*/
+						plotOptions: {
+							series: {
+								dataLabels: {
+									enabled: true
+								}
+							}
+						},
+						tooltip: {
+							formatter: function() {
+									return '<b>'+ this.series.name +'</b><br/>'+
+									this.x +': '+ this.y;
+							}
+						},
+						series: [{},{}]
+					};
+					
+					//getting beginning and ending date to post in php
+					var begin_date = document.getElementById("begin_date").value;
+					var year1 = begin_date.substring(6,10);
+					var day1 = begin_date.substring(3,5);
+					var month1 = begin_date.substring(0,2);
+					begin_date = year1+'-'+month1+'-'+day1;
+					
+					var end_date = document.getElementById("end_date").value;
+					var year2 = end_date.substring(6,10);
+					var day2 = end_date.substring(3,5);
+					var month2 = end_date.substring(0,2);
+					end_date = year2+'-'+month2+'-'+day2;
+					
+					var country = document.getElementById("countries").value;
+					var c_name = '';
+					
+					if(country == 0){
+						c_name = 'Trinidad and Tobago';
+					}else if(country == 1){
+						c_name = 'Grenada';
+					}else if(country == 2){
+						c_name = 'Jamaica';
+					}else if(country == 3){
+						c_name = 'Curacao';
+					}else if(country == 4){
+						c_name = 'Panama';
+					}else if(country == 5){
+						c_name = 'Honduras';
+					}else if(country == 6){
+						c_name = 'Barbados';
+					}else if(country == 7){
+						c_name = 'Puerto Rico';
+					}else if(country == 8){
+						c_name = 'Residential Customers';
+					}else{
+						c_name = 'Business Groups Customers';
+					}
+					
+					$('#titulo').text(c_name + ' indicators from ' + begin_date + ' to ' + end_date);
+					
+					$.ajax({
+						type:'post',
+						url: "kpis.php",
+						dataType: "json",
+						data: {
+							begin_date:begin_date, end_date:end_date,country:country
+						},
+						
+						success: function(jsonData){
+							
+							var tab = new google.visualization.DataTable(jsonData.data1);
+							var table = new google.visualization.Table(document.getElementById('table_div'));
+							table.draw(tab, {showRowNumber: false});
+							
+							options.yAxis.title.text = jsonData.title1;
+							options.chart.renderTo = 'chart_div';
+							options.xAxis.categories = jsonData.categories;
+							options.series=jsonData.data2;
+							chart= new Highcharts.Chart(options);							
+							
+							options.yAxis.title.text = jsonData.title2;
+							options.chart.renderTo = 'chart_div2';
+							options.series=jsonData.data3;
+							chart2 = new Highcharts.Chart(options);
+							
+							options.yAxis.title.text = jsonData.title3;
+							options.chart.renderTo = 'chart_div3';
+							options.series=jsonData.data4;
+							chart3 = new Highcharts.Chart(options);
+						}
+					});
+				}//end drawCharts
+				
+				function fillCountry(data){
+					var list1 = ["Trinidad & Tobago","Grenada","Jamaica","Curacao"];
+					var list2 = ["Panama","Honduras","Barbados","Puerto Rico"];
+					var values1 = ["0","1","2","3"];
+					var values2 = ["4","5","6","7"];
+					
+					var sel = document.getElementById('countries');
+					
+					if(data==0){
+						empty(sel);
+					
+						for(var i = 0; i < list1.length; i++){
+							var opt = document.createElement('option');
+							opt.innerHTML = list1[i];
+							opt.value = values1[i];
+							sel.appendChild(opt);
+						}
+					}else if(data==2){
+						empty(sel);
+					
+						for(var i = 0; i < list1.length; i++){
+							var opt = document.createElement('option');
+							opt.innerHTML = list2[i];
+							opt.value = values2[i];
+							sel.appendChild(opt);
+						}
+					}else if(data==1){
+						empty(sel);
+						var opt = document.createElement('option');
+						opt.innerHTML = 'All Residentials';
+						opt.value = '8';
+						sel.appendChild(opt);
+					}else{
+						empty(sel);
+						var opt = document.createElement('option');
+						opt.innerHTML = 'All BGs';
+						opt.value = '9';
+						sel.appendChild(opt);
+					}
+				}//end fillCountry
+				
+				function empty(select) {
+					select.innerHTML = '';
+				}
+		</script>
+	
+</html>

@@ -1,0 +1,347 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	
+	border-spacing: 3px;
+}
+
+/* Default Styles 
+--------------------------------------------------------------------*/
+
+body {
+	
+	font-family: 'Droid Sans', sans-serif;;
+}
+
+div#header{
+width:100%;
+height:200px;
+background-color:red;
+}
+
+div#body{
+margin:auto;
+margin-top:15px;
+width:900px;
+height:550px;
+
+}
+
+div#footer{
+  margin:0 auto;
+    width:100%;
+    height:auto;
+    overflow:hidden;  
+    bottom: 0px;
+	text-align: right;
+}
+
+div#right{
+float:right;
+width:120px;
+height:550px;
+background-image: url('imagenes/costados.png');
+}
+
+div#left{
+float:left;
+width:120px;
+height:550px;
+background-image: url('imagenes/costados.png');
+}
+
+
+div#center{
+display: inline-flex;
+width:505px;
+height:150px;
+background-image: url('imagenes/costados.png');
+}
+
+
+
+h1{
+font-family: Broadway;
+text-align: center;
+font-size:26px;
+font-weight: bold;
+color: #00BFFF;
+}
+
+h2 /*texto graficas update*/
+{
+font-family: VistaSansRegRegular;
+text-align: center;
+font-size: 14px;
+font-weight: bold;
+font-style: italic;
+}
+h3 /*texto titulo grafica*/
+{
+font-family: Arial;
+text-align: center;
+font-size: 18px;
+font-weight: bold;
+color: #00BFFF;
+}
+
+h4
+{
+font-family: VistaSansRegRegular; 
+ margin: 0 20px 0.4em 20px; 
+ margin-bottom: 0.4em; 
+ line-height: 1em;
+text-align: center;
+font-size:26px; 
+}
+
+h5{
+font-family: Broadway;
+text-align: center;
+font-size:16px;
+color: #000000;
+}
+
+h6{
+font-family: Broadway;
+text-align: center;
+font-size:20px;
+color: #DF0101;
+}
+
+h7 /*texto graficas update*/
+{
+font-family: Times New Roman;
+text-align: justify;
+font-size: 15px;
+}
+
+h8
+{
+font-size: 10px;
+font-style: italic;
+}
+
+h9 
+{
+font-family: VistaSansRegRegular;
+font-size: 14px;
+font-weight: bold;
+font-style: italic;
+}
+
+h10 
+{
+font-family: VistaSansRegRegular;
+font-size: 15px;
+font-weight: bold;
+}
+
+h11 /*texto graficas update*/
+{
+font-family: VistaSansRegRegular;
+text-align: center;
+font-size: 20px;
+font-weight: bold;
+font-style: italic;
+}
+
+img.icon{
+	width:30px;
+}
+
+
+
+.blue_light {
+color: #3499ef;
+}
+
+
+
+.clearfix {
+	clear: both;
+}
+
+.wrap {
+	width: 1000px;
+	margin: auto;
+	margin-top:20px;
+	margin-bottom:70px;
+	
+}
+
+.wrap1 {
+	width: 960px;
+	margin: auto;
+	margin-top:20px;
+	margin-bottom:20px;
+	
+}
+
+nav {
+	background: -webkit-gradient(linear, center top, center bottom, from(#fff), to(#ccc));
+	background-image: linear-gradient(#fff, #ccc);
+	border-radius: 6px;
+	box-shadow: 0px 0px 4px 2px rgba(0,0,0,0.4);
+	padding: 0 10px;
+	position: relative;
+}
+
+.menu li {
+	float: left;
+	position: relative;
+}
+
+.menu li a {
+	color: #444;
+	display: block;
+	font-size: 14px;
+	line-height: 20px;
+	padding: 6px 12px;
+	margin: 8px 8px;
+	vertical-align: middle;
+	text-decoration: none;
+}
+
+.menu li a:hover {
+	background: -webkit-gradient(linear, center top, center bottom, from(#ededed), to(#fff));
+	background-image: linear-gradient(#ededed, #fff);
+	border-radius: 12px;
+	box-shadow: inset 0px 0px 1px 1px rgba(0,0,0,0.1);
+	color: #222;
+}
+
+/* Dropdown styles */
+
+.menu ul {
+	position: absolute;
+	left: -9999px;
+	list-style: none;
+	opacity: 0;
+	transition: opacity 1s ease;
+}
+
+.menu ul li {
+	float: none;
+}
+
+.menu ul a {
+	white-space: nowrap;
+}
+
+/* Displays the dropdown on hover and moves back into position */
+.menu li:hover ul {
+	background: rgba(255,255,255,0.7);
+	border-radius: 0 0 6px 6px;
+	box-shadow: inset 0px 2px 4px rgba(0,0,0,0.4);
+	left: 5px;
+	opacity: 1;
+}
+
+/* Persistant Hover State */
+.menu li:hover a {
+	background: -webkit-gradient(linear, center top, center bottom, from(#ccc), to(#ededed));
+	background-image: linear-gradient(#ccc, #ededed);
+	border-radius: 12px;
+	box-shadow: inset 0px 0px 1px 1px rgba(0,0,0,0.1);
+	color: #222;
+}
+
+.menu li:hover ul a {
+	background: none;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.menu li:hover ul li a:hover {
+	background: -webkit-gradient(linear, center top, center bottom, from(#eee), to(#fff));
+	background-image: linear-gradient(#ededed, #fff);
+	border-radius: 12px;
+	box-shadow: inset 0px 0px 4px 2px rgba(0,0,0,0.3);
+	
+	
+	
+}
+
+input[type="submit"].css_button {
+  background: #00BFFF;
+  background-image: -webkit-linear-gradient(top, #00BFFF, #2980b9);
+  background-image: -moz-linear-gradient(top, #00BFFF, #2980b9);
+  background-image: -ms-linear-gradient(top, #00BFFF, #2980b9);
+  background-image: -o-linear-gradient(top, #00BFFF, #2980b9);
+  background-image: linear-gradient(to bottom, #00BFFF, #2980b9);
+  -webkit-border-radius: 28;
+  -moz-border-radius: 28;
+  border-radius: 28px;
+  font-family: Broadway;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #00BFFF;
+  background-image: -webkit-linear-gradient(top, #3cb0fd, #00BFFF);
+  background-image: -moz-linear-gradient(top, #3cb0fd, #00BFFF);
+  background-image: -ms-linear-gradient(top, #3cb0fd, #00BFFF);
+  background-image: -o-linear-gradient(top, #3cb0fd, #00BFFF);
+  background-image: linear-gradient(to bottom, #3cb0fd, #00BFFF);
+  text-decoration: none;
+}
+
+div#table{
+  width: 600px;
+  border: 1px solid #000;
+}
+
+div#table2{
+  width: 730px;
+  border: 1px solid #000;
+}
+
+.google-visualization-table-td {
+    text-align: center !important;
+}
